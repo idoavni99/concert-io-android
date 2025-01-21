@@ -5,4 +5,5 @@ plugins {
     alias(libs.plugins.kotlin.safeargs) apply false
     alias(libs.plugins.kotlin.ksp) apply false
     alias(libs.plugins.gms.services) apply false
+    alias(libs.plugins.androidx.room) apply false
 }

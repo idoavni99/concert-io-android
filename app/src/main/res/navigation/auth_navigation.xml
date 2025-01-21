@@ -15,5 +15,15 @@
         android:id="@+id/loginFragment"
         android:name="com.example.concertio.ui.auth.fragments.LoginFragment"
         android:label="Login Fragment"
-        tools:layout="@layout/fragment_login"/>
+        tools:layout="@layout/fragment_login">
+        <action
+            android:id="@+id/action_loginFragment_to_signUpFragment"
+            app:destination="@id/signUpFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/signUpFragment"
+        android:name="com.example.concertio.ui.auth.fragments.SignUpFragment"
+        android:label="Sign Up Fragment"
+        tools:layout="@layout/fragment_sign_up"></fragment>
 </navigation>
