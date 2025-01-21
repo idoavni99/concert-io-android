@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/app_navigation"
+    app:startDestination="@id/reviewsListFragment">
+
+    <activity
+        android:id="@+id/mainActivity"
+        android:name="com.example.concertio.ui.main.MainActivity"
+        android:label="Main Activity"
+        tools:layout="@layout/activity_main" />
+
+    <fragment
+        android:id="@+id/reviewsListFragment"
+        android:name="com.example.concertio.ui.main.fragments.ReviewsListFragment"
+        android:label="Reviews List"
+        tools:layout="@layout/fragment_reviews_list" />
+</navigation>
