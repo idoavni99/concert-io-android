@@ -14,6 +14,7 @@ import com.example.concertio.ui.auth.AuthViewModel
 import com.example.concertio.ui.main.MainActivity
 import com.google.android.gms.common.SignInButton
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.material.button.MaterialButton
 
 class LoginFragment : Fragment() {
     private val authViewModel by activityViewModels<AuthViewModel>()
@@ -23,11 +24,16 @@ class LoginFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
+        if (authViewModel.isUserLoggedIn()) {
+            toApp()
+        }
+
         return inflater.inflate(R.layout.fragment_login, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         setupGoogleSignIn(view)
+        setupEmailSignIn(view)
         super.onViewCreated(view, savedInstanceState)
     }
 
@@ -43,6 +49,12 @@ class LoginFragment : Fragment() {
             authViewModel.signInWithIdToken(idOption, credentialManager, requireContext()) {
                 toApp()
             }
+        }
+    }
+
+    private fun setupEmailSignIn(view: View) {
+        view.findViewById<MaterialButton>(R.id.email_sign_in_button).setOnClickListener {
+            findNavController().navigate(R.id.action_loginFragment_to_signUpFragment)
         }
     }
 
