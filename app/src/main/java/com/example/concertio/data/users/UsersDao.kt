@@ -22,6 +22,9 @@ interface UsersDao {
     @Query("DELETE FROM users")
     suspend fun deleteAll()
 
+    @Query("DELETE FROM users WHERE uid = :uid")
+    suspend fun deleteByUid(uid: String)
+
     @Query("SELECT * FROM users WHERE uid = :uid")
     fun getMyUserObservable(uid: String): LiveData<UserModel?>
 }
