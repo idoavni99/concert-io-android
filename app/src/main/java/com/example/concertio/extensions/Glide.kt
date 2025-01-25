@@ -25,6 +25,13 @@ fun ImageView.loadProfilePicture(context: Context, uri: Uri, placeholderRes: Int
         .into(this)
 }
 
+fun ImageView.loadReviewImage(context: Context, uri: Uri, placeholderRes: Int) {
+    Glide.with(context)
+        .load(uri)
+        .placeholder(placeholderRes)
+        .into(this)
+}
+
 fun MenuItem.loadImage(
     context: Context,
     uri: Uri,

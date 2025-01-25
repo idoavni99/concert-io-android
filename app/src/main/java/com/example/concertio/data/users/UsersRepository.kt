@@ -25,6 +25,52 @@ class UsersRepository {
         usersDao.upsertAll(user)
     }
 
+    suspend fun updateUserDetails(name: String, photoUri: Uri) = withContext(Dispatchers.IO) {
+        FirebaseAuth.getInstance().currentUser?.run {
+            updateProfile(
+                UserProfileChangeRequest.Builder().apply {
+                    displayName = name
+                    setPhotoUri(photoUri)
+                }.build()
+            ).await()
+            upsertUser(
+                UserModel(
+                    uid = uid,
+                    name = name,
+                    profilePicture = photoUri.toString(),
+                    email = email
+                )
+            )
+        }
+    }
+
+    suspend fun updateUserAuth(email: String?, password: String?) = withContext(Dispatchers.IO) {
+        email?.let {
+            FirebaseAuth.getInstance().currentUser?.verifyBeforeUpdateEmail(email)?.await()
+        }
+        password?.let {
+            FirebaseAuth.getInstance().currentUser?.updatePassword(password)?.await()
+        }
+    }
+
+    suspend fun deleteAllUsers() = withContext(Dispatchers.IO) {
+        usersDao.deleteAll()
+    }
+
+    suspend fun cacheUserIfNotExisting(uid: String) = withContext(Dispatchers.IO) {
+        val cachedResult = usersDao.getUserByUid(uid)
+        if (cachedResult == null) {
+            this@UsersRepository.getUserFromRemoteSource(uid)
+        }
+    }
+
+    suspend fun cacheUsersIfNotExisting(uids: List<String>) =
+        withContext(Dispatchers.IO) {
+            val existingUserIds = usersDao.getExistingUserIds(uids)
+            val nonExistingUserIds = uids.filter { !existingUserIds.contains(it) }
+            this@UsersRepository.getUsersFromRemoteSource(nonExistingUserIds)
+        }
+
     suspend fun getUserByUid(uid: String) = withContext(Dispatchers.IO) {
         usersDao.getUserByUid(uid)
     }
@@ -32,6 +78,31 @@ class UsersRepository {
     suspend fun isUserExisting(email: String) = withContext(Dispatchers.IO) {
         firestoreHandle.whereEqualTo("email", email).get().await().size() > 0
     }
+
+    suspend fun getUserFromRemoteSource(uid: String): UserModel? =
+        withContext(Dispatchers.IO) {
+            val user =
+                firestoreHandle.document(uid).get().await().toObject(RemoteSourceUser::class.java)
+                    ?.toUserModel()
+            if (user != null) {
+                usersDao.upsertAll(user)
+            }
+            return@withContext user
+        }
+
+    private suspend fun getUsersFromRemoteSource(
+        uids: List<String>
+    ): List<UserModel> =
+        withContext(Dispatchers.IO) {
+            val usersQuery =
+                if (uids.isNotEmpty()) firestoreHandle.whereIn("uid", uids) else firestoreHandle
+            val users = usersQuery.get().await().toObjects(RemoteSourceUser::class.java)
+                .map { it.toUserModel() }
+            if (users.isNotEmpty()) {
+                usersDao.upsertAll(*users.toTypedArray())
+            }
+            return@withContext users
+        }
 
     suspend fun uploadUserProfilePictureToFirebase(uri: Uri, uid: String) =
         withContext(Dispatchers.IO) {
