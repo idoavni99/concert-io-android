@@ -7,11 +7,18 @@ import androidx.lifecycle.viewModelScope
 import com.example.concertio.data.reviews.ReviewModel
 import com.example.concertio.data.reviews.ReviewWithReviewer
 import com.example.concertio.data.reviews.ReviewsRepository
+import com.google.firebase.firestore.Query
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+
+const val REVIEWS_FETCH_LIMIT = 4
 
 class ReviewsViewModel : ViewModel() {
     private val repository = ReviewsRepository.getInstance()
+    private var isLoadingReviews = false
+    private lateinit var reviewsCursor: Query
+    private var page = 1
 
     fun deleteReviewById(id: String, onDeletedUi: () -> Unit = {}) {
         viewModelScope.launch(Dispatchers.Main) {
@@ -21,13 +28,29 @@ class ReviewsViewModel : ViewModel() {
     }
 
     fun getReviews(getOnlyMyReviews: Boolean = false): LiveData<List<ReviewWithReviewer>> {
-        return this.repository.getReviewsList(50, 0, getOnlyMyReviews)
+        invalidateReviews()
+        return this.repository.getReviewsList(getOnlyMyReviews)
     }
 
     fun invalidateReviews() {
-        viewModelScope.launch {
-            repository.loadReviewsFromRemoteSource(50, 0)
+        if (!isLoadingReviews) {
+            viewModelScope.launch {
+                isLoadingReviews = true
+                if (::reviewsCursor.isInitialized) {
+                    repository.advanceCursor(reviewsCursor, REVIEWS_FETCH_LIMIT)?.let {
+                        reviewsCursor = it
+                        page++
+                    }
+                } else {
+                    reviewsCursor = repository.startReviewsCursor(REVIEWS_FETCH_LIMIT)
+                }
+                isLoadingReviews = false
+            }
         }
+    }
+
+    fun onListEnd() {
+        invalidateReviews()
     }
 
     fun invalidateReviewById(id: String) {

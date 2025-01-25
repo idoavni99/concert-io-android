@@ -51,6 +51,17 @@
             android:id="@+id/action_userProfileFragment_to_editReviewFragment"
             app:destination="@id/editReviewFragment" />
 
-<!--        TODO: action to settings fragment-->
+        <action
+            android:id="@+id/action_userProfileFragment_to_settingsFragment"
+            app:destination="@id/settingsFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.example.concertio.ui.main.fragments.settings.SettingsFragment"
+        tools:layout="@layout/fragment_settings">
+        <action
+            android:id="@+id/action_settingsFragment_to_userProfileFragment"
+            app:destination="@id/userProfileFragment" />
     </fragment>
 </navigation>
