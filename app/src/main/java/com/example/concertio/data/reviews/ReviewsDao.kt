@@ -9,11 +9,11 @@ import androidx.room.Upsert
 
 @Dao
 interface ReviewsDao {
-    @Query("SELECT * FROM reviews WHERE reviewer_uid = :myUid ORDER BY updated_at DESC")
-    fun getAllMyReviews(myUid: String): LiveData<List<ReviewWithReviewer>>
+    @Query("SELECT * FROM reviews WHERE reviewer_uid = :myUid ORDER BY updated_at DESC LIMIT :limit")
+    fun getAllMyReviews(limit: Int, myUid: String): LiveData<List<ReviewWithReviewer>>
 
-    @Query("SELECT * FROM reviews ORDER BY updated_at DESC")
-    fun getAllReviews(): LiveData<List<ReviewWithReviewer>>
+    @Query("SELECT * FROM reviews ORDER BY updated_at DESC LIMIT :limit")
+    fun getAllReviews(limit: Int): LiveData<List<ReviewWithReviewer>>
 
     @Query("SELECT * FROM reviews WHERE id = :id")
     fun findById(id: String): LiveData<ReviewWithReviewer?>

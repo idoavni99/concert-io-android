@@ -38,11 +38,13 @@ class ReviewsRepository {
     }
 
     fun getReviewsList(
+        limit: Int,
         getMyReviews: Boolean = false
     ): LiveData<List<ReviewWithReviewer>> {
         return if (getMyReviews) reviewsDao.getAllMyReviews(
+            limit,
             usersRepository.getMyUid()
-        ) else reviewsDao.getAllReviews()
+        ) else reviewsDao.getAllReviews(limit)
     }
 
 
@@ -72,15 +74,14 @@ class ReviewsRepository {
         }
     }
 
-    private suspend fun saveReviewsFromRemoteSource(result: QuerySnapshot) =
-        withContext(Dispatchers.IO) {
-            val reviews = result.toObjects(RemoteSourceReview::class.java)
-                .map { it.toReviewModel() }
-            if (reviews.isNotEmpty()) {
-                usersRepository.cacheUsersIfNotExisting(reviews.map { it.reviewerUid })
-                reviewsDao.upsertAll(*reviews.toTypedArray())
-            }
+    private suspend fun saveReviewsFromRemoteSource(result: QuerySnapshot) = withContext(Dispatchers.IO) {
+        val reviews = result.toObjects(RemoteSourceReview::class.java)
+            .map { it.toReviewModel() }
+        if (reviews.isNotEmpty()) {
+            usersRepository.cacheUsersIfNotExisting(reviews.map { it.reviewerUid })
+            reviewsDao.upsertAll(*reviews.toTypedArray())
         }
+    }
 
     suspend fun uploadReviewMedia(reviewId: String, uri: Uri) = withContext(Dispatchers.IO) {
         CloudStorageHolder.reviewFiles.child(reviewId).putFile(uri).await()
