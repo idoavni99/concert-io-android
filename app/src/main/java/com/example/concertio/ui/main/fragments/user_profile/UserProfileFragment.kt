@@ -65,8 +65,9 @@ class UserProfileFragment : Fragment() {
                         userProfileViewModel.signOut()
                         true
                     }
+                    // TODO: fragment to settings
                     menu.findItem(R.id.editProfile).setOnMenuItemClickListener {
-                        findNavController().navigate(UserProfileFragmentDirections.actionUserProfileFragmentToSettingsFragment())
+//                        findNavController().navigate(UserProfileFragmentDirections.actionUserProfileFragmentToSettingsFragment())
                         true
                     }
                 }

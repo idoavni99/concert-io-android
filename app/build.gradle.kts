@@ -69,6 +69,8 @@ dependencies {
     implementation(libs.firebase.storage)
     implementation(libs.firebase.storage.ktx)
     implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.media3.exoplayer)
+    implementation(libs.androidx.media3.ui)
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.room.runtime)
     implementation(libs.glide)
