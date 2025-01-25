@@ -12,7 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
-const val REVIEWS_FETCH_LIMIT = 4
+const val REVIEWS_FETCH_LIMIT = 50
 
 class ReviewsViewModel : ViewModel() {
     private val repository = ReviewsRepository.getInstance()
