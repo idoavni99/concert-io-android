@@ -9,6 +9,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView.OnScrollListener
 import com.example.concertio.R
 import com.example.concertio.ui.main.listadapter.ReviewType
 import com.example.concertio.ui.main.listadapter.ReviewsAdapter
@@ -53,6 +54,17 @@ class ReviewsListFragment : Fragment() {
                     context,
                     LinearLayoutManager.VERTICAL
                 )
+            )
+            addOnScrollListener(
+                object : OnScrollListener() {
+                    override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                        super.onScrollStateChanged(recyclerView, newState)
+
+                        if (!this@run.canScrollVertically(1)) {
+                            viewModel.onListEnd()
+                        }
+                    }
+                }
             )
         }
     }

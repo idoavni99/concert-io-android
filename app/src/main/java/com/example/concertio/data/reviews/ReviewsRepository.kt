@@ -5,6 +5,8 @@ import androidx.lifecycle.LiveData
 import com.example.concertio.data.users.UsersRepository
 import com.example.concertio.room.DatabaseHolder
 import com.example.concertio.storage.CloudStorageHolder
+import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.Dispatchers
@@ -37,14 +39,12 @@ class ReviewsRepository {
 
     fun getReviewsList(
         limit: Int,
-        offset: Int,
         getMyReviews: Boolean = false
     ): LiveData<List<ReviewWithReviewer>> {
-        return if (getMyReviews) reviewsDao.getAllMyReviewsPaginated(
+        return if (getMyReviews) reviewsDao.getAllMyReviews(
             limit,
-            offset,
             usersRepository.getMyUid()
-        ) else reviewsDao.getAllReviewsPaginated(limit, offset)
+        ) else reviewsDao.getAllReviews(limit)
     }
 
 
@@ -60,16 +60,28 @@ class ReviewsRepository {
             return@withContext reviewsDao.findById(id)
         }
 
-    suspend fun loadReviewsFromRemoteSource(limit: Int, offset: Int) =
-        withContext(Dispatchers.IO) {
-            val reviews = firestoreHandle.orderBy("review").startAt(offset).limit(limit.toLong())
-                .get().await().toObjects(RemoteSourceReview::class.java)
-                .map { it.toReviewModel() }
-            if (reviews.isNotEmpty()) {
-                usersRepository.cacheUsersIfNotExisting(reviews.map { it.reviewerUid })
-                reviewsDao.upsertAll(*reviews.toTypedArray())
-            }
+    suspend fun startReviewsCursor(limit: Int) = this.advanceCursor(
+        firestoreHandle.orderBy("updated_at"),
+        limit
+    ) ?: firestoreHandle.orderBy("updated_at").limit(limit.toLong())
+
+    suspend fun advanceCursor(query: Query, limit: Int) = withContext(Dispatchers.IO) {
+        val reviewsResult = query.limit(limit.toLong()).get().await()
+        val lastVisibleReview = reviewsResult.documents.getOrNull(reviewsResult.documents.lastIndex)
+        lastVisibleReview?.let {
+            saveReviewsFromRemoteSource(reviewsResult)
+            query.startAfter(lastVisibleReview).limit(limit.toLong())
         }
+    }
+
+    private suspend fun saveReviewsFromRemoteSource(result: QuerySnapshot) = withContext(Dispatchers.IO) {
+        val reviews = result.toObjects(RemoteSourceReview::class.java)
+            .map { it.toReviewModel() }
+        if (reviews.isNotEmpty()) {
+            usersRepository.cacheUsersIfNotExisting(reviews.map { it.reviewerUid })
+            reviewsDao.upsertAll(*reviews.toTypedArray())
+        }
+    }
 
     suspend fun uploadReviewMedia(reviewId: String, uri: Uri) = withContext(Dispatchers.IO) {
         CloudStorageHolder.reviewFiles.child(reviewId).putFile(uri).await()

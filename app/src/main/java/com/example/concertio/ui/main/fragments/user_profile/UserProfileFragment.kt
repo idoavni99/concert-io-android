@@ -1,5 +1,6 @@
 package com.example.concertio.ui.main.fragments.user_profile
 
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -14,14 +15,18 @@ import androidx.navigation.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView.OnScrollListener
 import com.example.concertio.R
 import com.example.concertio.extensions.loadProfilePicture
+import com.example.concertio.ui.auth.AuthActivity
+import com.example.concertio.ui.main.ReviewsViewModel
 import com.example.concertio.ui.main.listadapter.ReviewType
 import com.example.concertio.ui.main.listadapter.ReviewsAdapter
 import com.example.concertio.ui.main.UserProfileViewModel
 
 class UserProfileFragment : Fragment() {
     private val userProfileViewModel: UserProfileViewModel by activityViewModels()
+    private val reviewsViewModel: ReviewsViewModel by activityViewModels()
     private lateinit var reviewsList: RecyclerView
 
     override fun onCreateView(
@@ -63,11 +68,15 @@ class UserProfileFragment : Fragment() {
                     }
                     menu.findItem(R.id.signOut)?.setOnMenuItemClickListener {
                         userProfileViewModel.signOut()
+                        activity?.run {
+                            startActivity(Intent(this, AuthActivity::class.java))
+                            finish()
+                        }
                         true
                     }
-                    // TODO: fragment to settings
+
                     menu.findItem(R.id.editProfile).setOnMenuItemClickListener {
-//                        findNavController().navigate(UserProfileFragmentDirections.actionUserProfileFragmentToSettingsFragment())
+                        findNavController().navigate(UserProfileFragmentDirections.actionUserProfileFragmentToSettingsFragment())
                         true
                     }
                 }
@@ -76,13 +85,13 @@ class UserProfileFragment : Fragment() {
     }
 
     private fun setupMyReviewsList(view: View) {
-        userProfileViewModel.observeMyReviews().observe(viewLifecycleOwner) {
+        reviewsViewModel.getReviews(true).observe(viewLifecycleOwner) {
             reviewsList = view.findViewById(R.id.myReviewsList)
             reviewsList.run {
                 adapter = ReviewsAdapter(
                     reviewType = ReviewType.USER,
                     onDelete = {
-                        userProfileViewModel.deleteReviewById(it.id)
+                        reviewsViewModel.deleteReviewById(it.id)
                     },
                     onEdit = {
                         findNavController().navigate(
@@ -101,6 +110,14 @@ class UserProfileFragment : Fragment() {
                         LinearLayoutManager.VERTICAL
                     )
                 )
+
+                object : OnScrollListener() {
+                    override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                        super.onScrollStateChanged(recyclerView, newState)
+
+                        if (!this@run.canScrollVertically(1)) reviewsViewModel.onListEnd()
+                    }
+                }
             }
         }
     }
