@@ -1,8 +1,11 @@
 package com.example.concertio.extensions
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.widget.ImageView
+import androidx.core.app.ActivityCompat
 import androidx.core.view.isVisible
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
@@ -36,4 +39,11 @@ fun initMedia(
             isVisible = true
         }
     }
+}
+
+fun Context.hasPermission(permission: String): Boolean {
+    return ActivityCompat.checkSelfPermission(
+        this,
+        permission
+    ) != PackageManager.PERMISSION_GRANTED
 }

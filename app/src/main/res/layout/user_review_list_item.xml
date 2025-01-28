@@ -21,6 +21,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/review_location_placeholder"
+        android:textColor="?attr/colorPrimaryVariant"
         android:textSize="24sp"
         app:layout_constraintStart_toEndOf="@id/review_location_icon"
         app:layout_constraintTop_toTopOf="parent" />

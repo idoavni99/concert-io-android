@@ -1,10 +1,14 @@
 package com.example.concertio.ui.main.fragments.reviews_list
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
+import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -14,10 +18,15 @@ import com.example.concertio.R
 import com.example.concertio.ui.main.listadapter.ReviewType
 import com.example.concertio.ui.main.listadapter.ReviewsAdapter
 import com.example.concertio.ui.main.ReviewsViewModel
+import com.google.android.material.search.SearchBar
+import com.google.android.material.search.SearchView
 
 
 class ReviewsListFragment : Fragment() {
     private lateinit var reviewsList: RecyclerView
+    private lateinit var searchResults: RecyclerView;
+    private lateinit var searchBar: SearchBar
+    private lateinit var searchView: SearchView
     private val viewModel: ReviewsViewModel by activityViewModels()
 
     override fun onCreateView(
@@ -31,7 +40,12 @@ class ReviewsListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         reviewsList = view.findViewById(R.id.reviews_list)
-        initStudentsList(view)
+        searchResults = view.findViewById(R.id.reviews_search_results)
+        searchView = view.findViewById(R.id.search_view)
+        searchBar = view.findViewById(R.id.search_bar)
+        initReviewsList(view, reviewsList)
+        initReviewsList(view, searchResults)
+        initReviewsSearch()
         viewModel.getReviews().observe(viewLifecycleOwner, {
             if (it.isEmpty()) viewModel.invalidateReviews()
             (reviewsList.adapter as? ReviewsAdapter)?.updateReviews(it)
@@ -45,10 +59,45 @@ class ReviewsListFragment : Fragment() {
         super.onDestroyView()
     }
 
-    private fun initStudentsList(view: View) {
-        reviewsList.run {
+    private fun initReviewsSearch() {
+        searchView.setupWithSearchBar(searchBar)
+        searchView.editText.doOnTextChanged { text, _, _, _ ->
+            text?.let {
+                viewModel.cancelRunningSearch()
+                if (text.isNotEmpty()) {
+                    viewModel.searchReviews(it.toString()) { results ->
+                        this@ReviewsListFragment.view?.findViewById<View>(R.id.no_results_text)?.isVisible =
+                            results.isEmpty()
+                        (searchResults.adapter as? ReviewsAdapter)?.updateReviews(results)
+                    }
+                } else {
+                    this@ReviewsListFragment.view?.findViewById<View>(R.id.no_results_text)?.isVisible =
+                        true
+                    (searchResults.adapter as? ReviewsAdapter)?.updateReviews(emptyList())
+                }
+            }
+        }
+    }
+
+    private fun initReviewsList(view: View, recycler: RecyclerView = reviewsList) {
+        recycler.run {
             layoutManager = LinearLayoutManager(view.context)
-            adapter = ReviewsAdapter(reviewType = ReviewType.REVIEW)
+            adapter =
+                ReviewsAdapter(reviewType = ReviewType.REVIEW, onLocationClicked = { coord, name ->
+                    activity?.run {
+                        val gmmIntentUri = Uri.parse(
+                            "geo:${coord.latitude},${coord.longitude}?q=${
+                                Uri.encode(name)
+                            }"
+                        )
+                        Intent(Intent.ACTION_VIEW, gmmIntentUri).apply {
+                            setPackage("com.google.android.apps.maps")
+                            resolveActivity(packageManager)?.let {
+                                startActivity(this)
+                            }
+                        }
+                    }
+                })
             addItemDecoration(
                 DividerItemDecoration(
                     context,

@@ -3,8 +3,14 @@ package com.example.concertio.data.reviews
 import android.net.Uri
 import androidx.lifecycle.LiveData
 import com.example.concertio.data.users.UsersRepository
+import com.example.concertio.places.PlacesClientHolder
 import com.example.concertio.room.DatabaseHolder
 import com.example.concertio.storage.CloudStorageHolder
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.libraries.places.api.model.Place
+import com.google.android.libraries.places.api.net.FetchPlaceRequest
+import com.google.android.libraries.places.api.net.kotlin.awaitFetchPlace
+import com.google.firebase.firestore.Filter
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.ktx.firestore
@@ -74,18 +80,37 @@ class ReviewsRepository {
         }
     }
 
-    private suspend fun saveReviewsFromRemoteSource(result: QuerySnapshot) = withContext(Dispatchers.IO) {
-        val reviews = result.toObjects(RemoteSourceReview::class.java)
-            .map { it.toReviewModel() }
-        if (reviews.isNotEmpty()) {
-            usersRepository.cacheUsersIfNotExisting(reviews.map { it.reviewerUid })
-            reviewsDao.upsertAll(*reviews.toTypedArray())
+    private suspend fun saveReviewsFromRemoteSource(result: QuerySnapshot) =
+        withContext(Dispatchers.IO) {
+            val reviews = result.toObjects(RemoteSourceReview::class.java)
+                .map { it.toReviewModel() }
+            if (reviews.isNotEmpty()) {
+                usersRepository.cacheUsersIfNotExisting(reviews.map { it.reviewerUid })
+                reviewsDao.upsertAll(*reviews.toTypedArray())
+            }
         }
-    }
 
-    suspend fun uploadReviewMedia(reviewId: String, uri: Uri) = withContext(Dispatchers.IO) {
+    suspend fun uploadReviewMedia(reviewId: String, uri: Uri): Uri = withContext(Dispatchers.IO) {
         CloudStorageHolder.reviewFiles.child(reviewId).putFile(uri).await()
         CloudStorageHolder.reviewFiles.child(reviewId).downloadUrl.await()
+    }
+
+    suspend fun getCoordinateByPlaceId(placeId: String): LatLng? = withContext(Dispatchers.IO) {
+        PlacesClientHolder.getInstance()
+            .awaitFetchPlace(placeId, listOf(Place.Field.LOCATION)).place.location
+    }
+
+    suspend fun searchReviews(query: String) = withContext(Dispatchers.IO) {
+        val resultsFromFirestore = firestoreHandle.orderBy("artist").orderBy("location").where(
+            Filter.or(
+                Filter.lessThanOrEqualTo("artist", query),
+                Filter.lessThanOrEqualTo("location", query),
+                Filter.greaterThanOrEqualTo("artist", query),
+                Filter.greaterThanOrEqualTo("location", query),
+            )
+        ).get().await()
+        saveReviewsFromRemoteSource(resultsFromFirestore)
+        reviewsDao.searchReviews("%${query}%")
     }
 
     companion object {

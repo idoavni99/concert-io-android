@@ -14,6 +14,7 @@ import com.example.concertio.data.reviews.ReviewWithReviewer
 import com.example.concertio.extensions.initMedia
 import com.example.concertio.extensions.showProgress
 import com.example.concertio.extensions.stopProgress
+import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.button.MaterialButton
 
 class UserReviewViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -30,6 +31,7 @@ class UserReviewViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         fun bind(
             holder: UserReviewViewHolder,
             currentReview: ReviewWithReviewer,
+            onLocationClicked: ((location: LatLng, name: String) -> Unit),
             onEditClick: ((review: ReviewModel) -> Unit)?,
             onDeleteClick: ((review: ReviewModel) -> Unit)?
         ) {
@@ -57,6 +59,12 @@ class UserReviewViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             holder.deleteButton.setOnClickListener {
                 holder.deleteButton.showProgress()
                 onDeleteClick?.invoke(currentReview.review)
+            }
+
+            currentReview.review.locationCoordinate?.let { coordinate ->
+                holder.reviewLocation.setOnClickListener {
+                    onLocationClicked(coordinate, currentReview.review.location ?: "")
+                }
             }
         }
     }

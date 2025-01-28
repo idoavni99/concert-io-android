@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.ksp)
     alias(libs.plugins.androidx.room)
     alias(libs.plugins.gms.services)
+    alias(libs.plugins.secrets.gradle)
 }
 
 android {
@@ -39,6 +40,11 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        buildConfig = true
+    }
+
+    secrets {
+        propertiesFileName = "secrets.properties"
     }
 
     room {
@@ -63,6 +69,8 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation(libs.google.play.services)
     implementation(libs.google.identity)
+    implementation(libs.google.maps.places)
+    implementation(platform(libs.kotlinBom))
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.firestore.ktx)

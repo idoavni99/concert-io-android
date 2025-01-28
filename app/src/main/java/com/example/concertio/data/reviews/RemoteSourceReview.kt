@@ -1,12 +1,13 @@
 package com.example.concertio.data.reviews
 
-import android.net.Uri
+import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.firestore.GeoPoint
-import java.sql.Timestamp
+
 
 data class RemoteSourceReview(
     val artist: String? = null,
     val location_name: String? = null,
+    val location_coordinate: GeoPoint? = null,
     val review: String? = null,
     val reviewer_uid: String? = null,
     val media_type: String? = null,
@@ -20,6 +21,7 @@ data class RemoteSourceReview(
             id = id ?: "",
             artist = artist,
             location = location_name,
+            locationCoordinate = location_coordinate?.let { LatLng(it.latitude, it.longitude) },
             review = review ?: "",
             reviewerUid = reviewer_uid ?: "",
             stars = stars,

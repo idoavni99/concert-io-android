@@ -13,6 +13,7 @@ import com.example.concertio.data.reviews.ReviewModel
 import com.example.concertio.data.reviews.ReviewWithReviewer
 import com.example.concertio.extensions.initMedia
 import com.example.concertio.extensions.loadProfilePicture
+import com.google.android.gms.maps.model.LatLng
 
 class ReviewViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     val reviewerUid: TextView = itemView.findViewById(R.id.reviewer)
@@ -28,6 +29,7 @@ class ReviewViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         fun bind(
             holder: ReviewViewHolder,
             currentReview: ReviewWithReviewer,
+            onLocationClicked: ((location: LatLng, name: String) -> Unit)
         ) {
             holder.reviewerUid.text = currentReview.reviewer.name
             holder.location.text = currentReview.review.location
@@ -52,6 +54,12 @@ class ReviewViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
                 }
             }
             holder.stars.rating = currentReview.review.stars ?: 0F
+
+            currentReview.review.locationCoordinate?.let { coordinate ->
+                holder.location.setOnClickListener {
+                    onLocationClicked(coordinate, currentReview.review.location ?: "")
+                }
+            }
         }
     }
 }

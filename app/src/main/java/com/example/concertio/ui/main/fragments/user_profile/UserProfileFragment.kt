@@ -90,6 +90,21 @@ class UserProfileFragment : Fragment() {
             reviewsList.run {
                 adapter = ReviewsAdapter(
                     reviewType = ReviewType.USER,
+                    onLocationClicked = { coord, name ->
+                        activity?.run {
+                            val gmmIntentUri = Uri.parse(
+                                "geo:${coord.latitude},${coord.longitude}?q=${
+                                    Uri.encode(name)
+                                }"
+                            )
+                            Intent(Intent.ACTION_VIEW, gmmIntentUri).apply {
+                                setPackage("com.google.android.apps.maps")
+                                resolveActivity(packageManager)?.let {
+                                    startActivity(this)
+                                }
+                            }
+                        }
+                    },
                     onDelete = {
                         reviewsViewModel.deleteReviewById(it.id)
                     },
