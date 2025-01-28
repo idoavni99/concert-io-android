@@ -10,7 +10,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginVertical="16dp"
         android:src="@drawable/baseline_edit_location_24"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -24,16 +24,16 @@
         android:textColor="?attr/colorPrimaryVariant"
         android:textSize="24sp"
         app:layout_constraintStart_toEndOf="@id/review_location_icon"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="@id/review_location_icon" />
 
     <ImageView
         android:id="@+id/review_artist_icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
         android:src="@drawable/baseline_artist_24"
-        app:layout_constraintBottom_toBottomOf="@id/review_artist"
-        app:layout_constraintStart_toEndOf="@id/review_location"
+        app:layout_constraintTop_toBottomOf="@id/review_location_icon"
+        app:layout_constraintStart_toStartOf="@id/review_location_icon"
         app:tint="?attr/colorPrimaryVariant" />
 
     <TextView
@@ -43,7 +43,8 @@
         android:text="@string/review_artist_placeholder"
         android:textSize="24sp"
         app:layout_constraintStart_toEndOf="@id/review_artist_icon"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="@id/review_artist_icon"
+        app:layout_constraintBottom_toBottomOf="@id/review_artist_icon"/>
 
     <RatingBar
         android:id="@+id/review_stars"
@@ -56,7 +57,7 @@
         android:scaleY="0.5"
         android:transformPivotX="0dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/review_location" />
+        app:layout_constraintTop_toBottomOf="@id/review_artist" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/edit_review_button"
