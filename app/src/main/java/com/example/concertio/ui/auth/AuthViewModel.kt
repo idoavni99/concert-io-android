@@ -75,7 +75,7 @@ class AuthViewModel : ViewModel() {
     fun signUpWithEmailPassword(
         email: String,
         password: String,
-        displayName: String,
+        name: String,
         profilePictureUri: Uri? = null,
         onFinishUi: () -> Unit,
     ) {
@@ -89,8 +89,10 @@ class AuthViewModel : ViewModel() {
                                 this.uid
                             ) else null
                         user?.updateProfile(
-                            UserProfileChangeRequest.Builder().setDisplayName(displayName)
-                                .setPhotoUri(uploadedPictureUri).build()
+                            UserProfileChangeRequest.Builder().apply {
+                                displayName = name
+                                photoUri = uploadedPictureUri
+                            }.build()
                         )
                     }
                 }
