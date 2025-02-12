@@ -3,7 +3,6 @@ package com.example.concertio.data.reviews
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.firestore.GeoPoint
 
-
 data class RemoteSourceReview(
     val artist: String? = null,
     val location_name: String? = null,

@@ -9,26 +9,30 @@ import android.view.MenuItem
 import android.widget.ImageView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
-import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
+import com.example.concertio.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-fun ImageView.loadProfilePicture(context: Context, uri: Uri, placeholderRes: Int) {
+fun ImageView.loadProfilePicture(context: Context, uri: Uri) {
     Glide.with(context)
         .load(uri)
         .circleCrop()
-        .placeholder(placeholderRes)
+        .placeholder(
+            R.drawable.empty_profile_picture
+        )
         .into(this)
 }
 
-fun ImageView.loadReviewImage(context: Context, uri: Uri, placeholderRes: Int) {
+fun ImageView.loadReviewImage(context: Context, uri: Uri) {
     Glide.with(context)
         .load(uri)
-        .placeholder(placeholderRes)
+        .placeholder(
+            R.drawable.baseline_insert_photo_24
+        )
         .into(this)
 }
 
@@ -54,7 +58,6 @@ fun loadImageIntoDrawable(
     Glide.with(context)
         .asBitmap()
         .load(uri)
-        .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
         .placeholder(placeholderRes)
         .circleCrop()
         .listener(object : RequestListener<Bitmap> {

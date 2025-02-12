@@ -14,7 +14,7 @@ abstract class FileUploadingFragment() : Fragment() {
 
     private val fileAccessLauncher =
         this.registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { results ->
-            if (results.all { it.value }) {
+            if (results.any { it.value }) {
                 onFileAccessGranted()
             } else {
                 Toast.makeText(context, "Permission denied", Toast.LENGTH_SHORT).show()

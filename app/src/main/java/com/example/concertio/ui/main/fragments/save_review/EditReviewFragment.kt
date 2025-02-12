@@ -5,23 +5,22 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.isVisible
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.concertio.R
 import com.example.concertio.data.reviews.ReviewWithReviewer
 import com.example.concertio.extensions.initMedia
-import com.example.concertio.extensions.loadReviewImage
-import com.example.concertio.extensions.showProgress
+import com.example.concertio.storage.FileCacheManager
 import com.google.android.material.button.MaterialButton
+import kotlinx.coroutines.launch
+import java.net.URL
 
 class EditReviewFragment : AddReviewFragment() {
     private val args by navArgs<EditReviewFragmentArgs>()
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
         return inflater.inflate(R.layout.fragment_edit_review, container, false)
     }
@@ -41,12 +40,14 @@ class EditReviewFragment : AddReviewFragment() {
             locationTextView?.setText(location)
             reviewText?.setText(review)
             reviewStars?.rating = stars ?: 0F
-            mediaUri?.let { uri ->
-                mediaType?.let { type ->
-                    val parsedUri = Uri.parse(uri)
-                    this@EditReviewFragment.mediaUri = parsedUri
-                    this@EditReviewFragment.mediaType = mediaType
-                    initMedia(requireContext(), reviewImage, reviewVideo, parsedUri, type)
+            mediaUri?.let { url ->
+                lifecycleScope.launch {
+                    mediaType?.let { type ->
+                        val uri = FileCacheManager.getFileLocalUri(URL(url))
+                        this@EditReviewFragment.mediaUri = uri
+                        this@EditReviewFragment.mediaType = mediaType
+                        initMedia(requireContext(), reviewImage, reviewVideo, uri, type)
+                    }
                 }
             }
         } ?: {

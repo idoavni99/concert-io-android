@@ -11,6 +11,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toolbar
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -18,11 +19,14 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.OnScrollListener
 import com.example.concertio.R
 import com.example.concertio.extensions.loadProfilePicture
+import com.example.concertio.storage.FileCacheManager
 import com.example.concertio.ui.auth.AuthActivity
 import com.example.concertio.ui.main.ReviewsViewModel
 import com.example.concertio.ui.main.listadapter.ReviewType
 import com.example.concertio.ui.main.listadapter.ReviewsAdapter
 import com.example.concertio.ui.main.UserProfileViewModel
+import kotlinx.coroutines.launch
+import java.net.URL
 
 class UserProfileFragment : Fragment() {
     private val userProfileViewModel: UserProfileViewModel by activityViewModels()
@@ -59,12 +63,15 @@ class UserProfileFragment : Fragment() {
             user?.run {
                 view.findViewById<Toolbar>(R.id.user_profile_toolbar)?.apply {
                     findViewById<TextView>(R.id.user_profile_name)?.text = name
-                    profilePicture?.let { picUri ->
-                        findViewById<ImageView>(R.id.user_profile_picture)?.loadProfilePicture(
-                            this@UserProfileFragment.requireContext(),
-                            Uri.parse(picUri),
-                            R.drawable.empty_profile_picture
-                        )
+                    profilePicture?.let { url ->
+                        findViewById<ImageView>(R.id.user_profile_picture)?.let {
+                            lifecycleScope.launch {
+                                it.loadProfilePicture(
+                                    this@UserProfileFragment.requireContext(),
+                                    FileCacheManager.getFileLocalUri(URL(url))
+                                )
+                            }
+                        }
                     }
                     menu.findItem(R.id.signOut)?.setOnMenuItemClickListener {
                         userProfileViewModel.signOut()
@@ -105,6 +112,7 @@ class UserProfileFragment : Fragment() {
                             }
                         }
                     },
+                    scope = lifecycleScope,
                     onDelete = {
                         reviewsViewModel.deleteReviewById(it.id)
                     },

@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -46,6 +47,7 @@ class ReviewsListFragment : Fragment() {
         initReviewsList(view, reviewsList)
         initReviewsList(view, searchResults)
         initReviewsSearch()
+        initReviewsList(view)
         viewModel.getReviews().observe(viewLifecycleOwner, {
             if (it.isEmpty()) viewModel.invalidateReviews()
             (reviewsList.adapter as? ReviewsAdapter)?.updateReviews(it)
@@ -97,7 +99,7 @@ class ReviewsListFragment : Fragment() {
                             }
                         }
                     }
-                })
+                }, scope = lifecycleScope)
             addItemDecoration(
                 DividerItemDecoration(
                     context,

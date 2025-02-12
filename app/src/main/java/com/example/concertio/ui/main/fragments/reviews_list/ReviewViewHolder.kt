@@ -5,15 +5,17 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.RatingBar
 import android.widget.TextView
-import android.widget.VideoView
 import androidx.media3.ui.PlayerView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.concertio.R
-import com.example.concertio.data.reviews.ReviewModel
 import com.example.concertio.data.reviews.ReviewWithReviewer
 import com.example.concertio.extensions.initMedia
 import com.example.concertio.extensions.loadProfilePicture
 import com.google.android.gms.maps.model.LatLng
+import com.example.concertio.storage.FileCacheManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import java.net.URL
 
 class ReviewViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     val reviewerUid: TextView = itemView.findViewById(R.id.reviewer)
@@ -29,28 +31,30 @@ class ReviewViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         fun bind(
             holder: ReviewViewHolder,
             currentReview: ReviewWithReviewer,
-            onLocationClicked: ((location: LatLng, name: String) -> Unit)
+            onLocationClicked: ((location: LatLng, name: String) -> Unit),
+            scope: CoroutineScope
         ) {
             holder.reviewerUid.text = currentReview.reviewer.name
             holder.location.text = currentReview.review.location
-            holder.artist.text = currentReview.review.artist
+            holder.artist.text = currentReview.review.artist ?: "Unknown"
             holder.text.text = currentReview.review.review
-            currentReview.reviewer.profilePicture?.let {
-                holder.profileImage.loadProfilePicture(
-                    holder.itemView.context,
-                    Uri.parse(it),
-                    R.drawable.empty_profile_picture
-                )
-            }
-            currentReview.review.mediaUri?.let { uri ->
-                currentReview.review.mediaType?.let { type ->
-                    initMedia(
+            scope.launch {
+                currentReview.reviewer.profilePicture?.let {
+                    holder.profileImage.loadProfilePicture(
                         holder.itemView.context,
-                        holder.image,
-                        holder.video,
-                        Uri.parse(uri),
-                        type
+                        FileCacheManager.getFileLocalUri(URL(it)),
                     )
+                }
+                currentReview.review.mediaUri?.let { url ->
+                    currentReview.review.mediaType?.let { type ->
+                        initMedia(
+                            holder.itemView.context,
+                            holder.image,
+                            holder.video,
+                            FileCacheManager.getFileLocalUri(URL(url)),
+                            type
+                        )
+                    }
                 }
             }
             holder.stars.rating = currentReview.review.stars ?: 0F

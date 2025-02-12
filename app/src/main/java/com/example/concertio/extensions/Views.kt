@@ -24,8 +24,7 @@ fun initMedia(
         imageView?.isVisible = true
         imageView?.loadReviewImage(
             context,
-            uri,
-            R.drawable.baseline_insert_photo_24
+            uri
         )
     } else {
         videoView?.apply {

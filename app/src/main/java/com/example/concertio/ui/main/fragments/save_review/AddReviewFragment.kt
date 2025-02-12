@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -48,6 +49,7 @@ import java.util.UUID
 open class AddReviewFragment : FileUploadingFragment() {
     var mediaType: String? = null
     var mediaUri: Uri? = null
+    private var chooseMediaButtonIcon: Drawable? = null
     protected val viewModel: ReviewsViewModel by activityViewModels()
     protected val reviewImage by lazy { view?.findViewById<ImageView>(R.id.review_image) }
     protected val reviewVideo by lazy { view?.findViewById<PlayerView>(R.id.review_video) }
@@ -75,7 +77,7 @@ open class AddReviewFragment : FileUploadingFragment() {
                 }
             }
 
-            chooseMediaButton?.stopProgress()
+            chooseMediaButton?.stopProgress(this.chooseMediaButtonIcon)
         }
 
     override fun onCreateView(
@@ -122,7 +124,7 @@ open class AddReviewFragment : FileUploadingFragment() {
 
     private fun setupActions(view: View) {
         saveButton?.setOnClickListener {
-            saveButton?.showProgress()
+            val oldIcon = saveButton?.showProgress()
             val reviewData = getReviewFromInputs()
             viewModel.saveReview(reviewData, selectedLocationId, mediaUri,
                 onCompleteUi = {
@@ -130,11 +132,7 @@ open class AddReviewFragment : FileUploadingFragment() {
                 },
                 onErrorUi = {
                     saveButton?.stopProgress(
-                        ResourcesCompat.getDrawable(
-                            resources,
-                            R.drawable.baseline_file_upload_24,
-                            resources.newTheme()
-                        )
+                        oldIcon
                     )
                     Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
                 }
@@ -142,7 +140,7 @@ open class AddReviewFragment : FileUploadingFragment() {
         }
 
         chooseMediaButton?.setOnClickListener {
-            chooseMediaButton?.showProgress()
+            this.chooseMediaButtonIcon = chooseMediaButton?.showProgress()
             requestFileAccess()
         }
     }
