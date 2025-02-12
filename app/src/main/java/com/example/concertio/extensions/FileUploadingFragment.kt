@@ -11,13 +11,16 @@ import androidx.fragment.app.Fragment
 
 abstract class FileUploadingFragment() : Fragment() {
     abstract fun onFileAccessGranted()
+    open fun onFileAccessDenied() {
+        Toast.makeText(context, "Permission denied", Toast.LENGTH_SHORT).show()
+    }
 
     private val fileAccessLauncher =
         this.registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { results ->
             if (results.any { it.value }) {
                 onFileAccessGranted()
             } else {
-                Toast.makeText(context, "Permission denied", Toast.LENGTH_SHORT).show()
+                onFileAccessDenied()
             }
         }
 

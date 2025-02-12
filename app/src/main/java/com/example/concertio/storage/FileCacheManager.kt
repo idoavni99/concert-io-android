@@ -14,27 +14,27 @@ object FileCacheManager {
     private lateinit var cacheDir: File;
 
     fun init(context: Context) {
-        this.cacheDir = context.cacheDir;
+        this.cacheDir = context.cacheDir
+        cacheDir.mkdirs()
+    }
+
+    suspend fun clearCacheAsync() = withContext(Dispatchers.IO) {
+        cacheDir.deleteRecursively()
         cacheDir.mkdirs()
     }
 
     suspend fun getFileLocalUri(remoteUrl: URL) =
         withContext(Dispatchers.IO) {
             val transformedUrl = getKeyByUrl(remoteUrl)
-            val cachedFile = getCachedFile(transformedUrl)
-            if (cachedFile != null) {
-                File(cachedFile.localPath).toUri()
-            } else {
-                cacheFile(remoteUrl, transformedUrl)
-            }
+            getCachedFileUri(transformedUrl) ?: cacheFile(remoteUrl, transformedUrl)
         }
 
     private fun getKeyByUrl(url: URL) = url.toString().replace("/", "~")
 
-    private fun getCachedFile(key: String): CachedFile? {
+    private fun getCachedFileUri(key: String): Uri? {
         val file = File(cacheDir, key)
         return if (file.exists()) {
-            CachedFile(key, file.absolutePath)
+            file.toUri()
         } else {
             null
         }

@@ -1,6 +1,5 @@
 package com.example.concertio.ui.main.fragments.reviews_list
 
-import android.net.Uri
 import android.view.View
 import android.widget.ImageView
 import android.widget.RatingBar

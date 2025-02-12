@@ -82,18 +82,18 @@ class SignUpFragment : FileUploadingFragment() {
         displayNameField?.visibility = View.GONE
         actionButton?.text = "Sign In"
         actionButton?.setOnClickListener {
-            val oldIcon = actionButton?.showProgress()
+            actionButton?.showProgress()
             val email = emailField?.text?.toString()
             val password = passwordField?.text?.toString()
             if (email?.isNotEmpty() == true && password?.isNotEmpty() == true) {
                 authViewModel.signInWithEmailPassword(email, password, onFinishUi = {
                     toApp()
                 }, onErrorUi = {
-                    actionButton?.stopProgress(oldIcon)
+                    actionButton?.stopProgress()
                     Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
                 })
             } else {
-                actionButton?.stopProgress(oldIcon)
+                actionButton?.stopProgress()
                 Toast.makeText(requireContext(), "Invalid credentials", Toast.LENGTH_SHORT).show()
             }
         }
@@ -108,7 +108,7 @@ class SignUpFragment : FileUploadingFragment() {
         }
         actionButton?.text = "Sign Up"
         actionButton?.setOnClickListener {
-            val oldIcon = actionButton?.showProgress()
+            actionButton?.showProgress()
             val email = emailField?.text?.toString()
             val password = passwordField?.text?.toString()
             val displayName = displayNameField?.text?.toString()
@@ -130,7 +130,7 @@ class SignUpFragment : FileUploadingFragment() {
                     e.message,
                     Toast.LENGTH_SHORT
                 ).show()
-                actionButton?.stopProgress(oldIcon)
+                actionButton?.stopProgress()
             }
         }
     }

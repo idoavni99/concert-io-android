@@ -5,7 +5,6 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.RatingBar
 import android.widget.TextView
-import android.widget.VideoView
 import androidx.media3.ui.PlayerView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.concertio.R
@@ -13,7 +12,6 @@ import com.example.concertio.data.reviews.ReviewModel
 import com.example.concertio.data.reviews.ReviewWithReviewer
 import com.example.concertio.extensions.initMedia
 import com.example.concertio.extensions.showProgress
-import com.example.concertio.extensions.stopProgress
 import com.google.android.gms.maps.model.LatLng
 import com.example.concertio.storage.FileCacheManager
 import com.google.android.material.button.MaterialButton

@@ -33,23 +33,14 @@ import com.example.concertio.extensions.initMedia
 import com.example.concertio.extensions.showProgress
 import com.example.concertio.extensions.stopProgress
 import com.example.concertio.ui.main.fragments.save_review.adapter.PlacesAdapter
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.LocationServices.getFusedLocationProviderClient
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.libraries.places.api.model.AutocompletePrediction
 import com.google.android.material.button.MaterialButton
 import com.google.firebase.auth.FirebaseAuth
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
-import kotlinx.coroutines.withContext
+
 import java.util.UUID
 
 open class AddReviewFragment : FileUploadingFragment() {
     var mediaType: String? = null
     var mediaUri: Uri? = null
-    private var chooseMediaButtonIcon: Drawable? = null
     protected val viewModel: ReviewsViewModel by activityViewModels()
     protected val reviewImage by lazy { view?.findViewById<ImageView>(R.id.review_image) }
     protected val reviewVideo by lazy { view?.findViewById<PlayerView>(R.id.review_video) }
@@ -77,7 +68,7 @@ open class AddReviewFragment : FileUploadingFragment() {
                 }
             }
 
-            chooseMediaButton?.stopProgress(this.chooseMediaButtonIcon)
+            chooseMediaButton?.stopProgress()
         }
 
     override fun onCreateView(
@@ -124,7 +115,7 @@ open class AddReviewFragment : FileUploadingFragment() {
 
     private fun setupActions(view: View) {
         saveButton?.setOnClickListener {
-            val oldIcon = saveButton?.showProgress()
+            saveButton?.showProgress()
             val reviewData = getReviewFromInputs()
             viewModel.saveReview(reviewData, selectedLocationId, mediaUri,
                 onCompleteUi = {
@@ -132,7 +123,11 @@ open class AddReviewFragment : FileUploadingFragment() {
                 },
                 onErrorUi = {
                     saveButton?.stopProgress(
-                        oldIcon
+                        ResourcesCompat.getDrawable(
+                            resources,
+                            R.drawable.baseline_file_upload_24,
+                            resources.newTheme()
+                        )
                     )
                     Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
                 }
@@ -140,7 +135,7 @@ open class AddReviewFragment : FileUploadingFragment() {
         }
 
         chooseMediaButton?.setOnClickListener {
-            this.chooseMediaButtonIcon = chooseMediaButton?.showProgress()
+            chooseMediaButton?.showProgress()
             requestFileAccess()
         }
     }
@@ -152,6 +147,11 @@ open class AddReviewFragment : FileUploadingFragment() {
             addCategory(Intent.CATEGORY_OPENABLE)
         }
         selectMediaLauncher.launch(intent)
+    }
+
+    override fun onFileAccessDenied() {
+        super.onFileAccessDenied()
+        chooseMediaButton?.stopProgress()
     }
 
     open fun onReviewSaved(view: View) {

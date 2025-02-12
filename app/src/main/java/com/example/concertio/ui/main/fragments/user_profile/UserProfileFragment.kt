@@ -74,10 +74,11 @@ class UserProfileFragment : Fragment() {
                         }
                     }
                     menu.findItem(R.id.signOut)?.setOnMenuItemClickListener {
-                        userProfileViewModel.signOut()
-                        activity?.run {
-                            startActivity(Intent(this, AuthActivity::class.java))
-                            finish()
+                        userProfileViewModel.signOut {
+                            activity?.run {
+                                startActivity(Intent(this, AuthActivity::class.java))
+                                finish()
+                            }
                         }
                         true
                     }
