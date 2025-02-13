@@ -38,15 +38,14 @@ class AuthService {
             FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, password)
                 .await().apply {
                     user?.apply {
-                        val uploadedPictureUri =
+                        val profilePicture =
                             if (profilePictureUri != null) usersRepository.uploadUserProfilePictureToFirebase(
                                 profilePictureUri,
                                 this.uid
                             ) else null
-                        user?.updateProfile(
+                        updateProfile(
                             UserProfileChangeRequest.Builder().apply {
                                 displayName = name
-                                photoUri = uploadedPictureUri
                             }.build()
                         )
                     }

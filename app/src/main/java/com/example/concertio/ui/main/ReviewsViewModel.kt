@@ -40,6 +40,12 @@ class ReviewsViewModel : ViewModel() {
         }
     }
 
+    fun flushReviewsDB() {
+        viewModelScope.launch {
+            repository.removeAllFromDB()
+        }
+    }
+
     fun getReviews(getOnlyMyReviews: Boolean = false): LiveData<List<ReviewWithReviewer>> {
         invalidateReviews()
         return this.page.switchMap {

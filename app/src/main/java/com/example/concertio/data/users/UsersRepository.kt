@@ -17,7 +17,7 @@ class UsersRepository {
     private val usersDao = DatabaseHolder.getDatabase().usersDao()
     private val firestoreHandle = Firebase.firestore.collection("users")
 
-    fun getMyUid() = FirebaseAuth.getInstance().currentUser?.uid!!
+    fun getMyUid() = FirebaseAuth.getInstance().currentUser?.uid ?: ""
 
     fun getMyUserObservable() = usersDao.getMyUserObservable(getMyUid())
 

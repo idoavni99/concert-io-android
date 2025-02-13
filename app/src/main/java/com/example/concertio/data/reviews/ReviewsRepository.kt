@@ -125,6 +125,10 @@ class ReviewsRepository {
         reviewsDao.searchReviews("%${query}%")
     }
 
+    suspend fun removeAllFromDB() = withContext(Dispatchers.IO) {
+        reviewsDao.deleteAll()
+    }
+
     companion object {
         private val instance = ReviewsRepository()
         fun getInstance() = instance

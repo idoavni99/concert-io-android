@@ -19,9 +19,11 @@ class MainActivity : AppCompatActivity() {
     private val bottomNav by lazy { findViewById<BottomNavigationView>(R.id.bottom_nav) }
     private val navHostFragment by lazy { supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment }
     private val userProfileViewModel by viewModels<UserProfileViewModel>()
+    private val reviewsViewModel by viewModels<ReviewsViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        reviewsViewModel.flushReviewsDB()
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.mainActivity)) { v, insets ->

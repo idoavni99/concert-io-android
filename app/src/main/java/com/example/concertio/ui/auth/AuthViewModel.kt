@@ -65,7 +65,7 @@ class AuthViewModel : ViewModel() {
     ) {
         viewModelScope.launch(Dispatchers.Main) {
             authService.signUp(email, password, name, profilePictureUri)?.let {
-                onFinishUi()
+                signInWithEmailPassword(email, password, onFinishUi, onErrorUi)
             } ?: run { onErrorUi("Sign up failed") }
         }
     }
