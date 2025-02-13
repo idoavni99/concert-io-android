@@ -35,8 +35,7 @@ class SignUpFragment : FileUploadingFragment() {
                 result.data?.data?.let {
                     profilePictureOrLogo?.loadProfilePicture(
                         requireContext(),
-                        it,
-                        R.drawable.empty_profile_picture
+                        it
                     )
                     profilePictureUri = it
                 }

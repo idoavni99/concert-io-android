@@ -10,6 +10,8 @@ import com.example.concertio.data.reviews.ReviewModel
 import com.example.concertio.data.reviews.ReviewWithReviewer
 import com.example.concertio.ui.main.fragments.reviews_list.ReviewViewHolder
 import com.example.concertio.ui.main.fragments.user_profile.UserReviewViewHolder
+import com.google.android.gms.maps.model.LatLng
+import kotlinx.coroutines.CoroutineScope
 
 enum class ReviewType {
     USER,
@@ -17,9 +19,11 @@ enum class ReviewType {
 }
 
 class ReviewsAdapter(
+    private val onLocationClicked: ((LatLng, String) -> Unit),
     private val onEdit: ((ReviewModel) -> Unit)? = null,
     private val onDelete: ((ReviewModel) -> Unit)? = null,
-    private val reviewType: ReviewType
+    private val reviewType: ReviewType,
+    private val scope: CoroutineScope
 ) :
     RecyclerView.Adapter<ViewHolder>() {
     private val reviewDiffer = AsyncListDiffer(this, ReviewsComparator())
@@ -43,12 +47,20 @@ class ReviewsAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val currentReview = reviewDiffer.currentList[position]
         when (holder) {
-            is ReviewViewHolder -> ReviewViewHolder.bind(holder, currentReview)
+            is ReviewViewHolder -> ReviewViewHolder.bind(
+                holder,
+                currentReview,
+                onLocationClicked,
+                scope
+            )
+
             is UserReviewViewHolder -> UserReviewViewHolder.bind(
                 holder,
                 currentReview,
-                onDeleteClick = onDelete,
-                onEditClick = onEdit
+                onLocationClicked,
+                scope,
+                onEditClick = onEdit,
+                onDeleteClick = onDelete
             )
         }
     }

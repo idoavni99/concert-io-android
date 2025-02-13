@@ -2,7 +2,6 @@ package com.example.concertio.extensions
 
 import android.graphics.drawable.Drawable
 import androidx.annotation.ColorInt
-import androidx.annotation.DrawableRes
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.progressindicator.CircularProgressIndicatorSpec
 import com.google.android.material.progressindicator.IndeterminateDrawable

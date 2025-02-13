@@ -13,8 +13,7 @@ import androidx.navigation.ui.NavigationUI
 import com.example.concertio.R
 import com.example.concertio.extensions.loadImage
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+
 
 class MainActivity : AppCompatActivity() {
     private val bottomNav by lazy { findViewById<BottomNavigationView>(R.id.bottom_nav) }
@@ -34,14 +33,12 @@ class MainActivity : AppCompatActivity() {
 
         userProfileViewModel.observeMyProfile().observe(this) {
             it?.profilePicture?.let {
-                lifecycleScope.launch(Dispatchers.IO) {
-                    bottomNav.menu.findItem(R.id.userProfileFragment).loadImage(
-                        applicationContext,
-                        Uri.parse(it),
-                        R.drawable.empty_profile_picture,
-                        lifecycleScope
-                    )
-                }
+                bottomNav.menu.findItem(R.id.userProfileFragment).loadImage(
+                    applicationContext,
+                    Uri.parse(it),
+                    R.drawable.empty_profile_picture,
+                    lifecycleScope
+                )
             }
         }
     }

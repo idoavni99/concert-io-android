@@ -6,9 +6,8 @@ import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import com.example.concertio.data.ValidationResult
 import com.example.concertio.data.users.UserModel
-import com.google.firebase.auth.FirebaseAuth
-import java.sql.Timestamp
-import java.util.UUID
+import com.google.android.gms.maps.model.LatLng
+import com.google.firebase.firestore.GeoPoint
 
 @Entity(
     tableName = "reviews",
@@ -38,6 +37,10 @@ data class ReviewModel(
     @ColumnInfo(
         name = "media_uri"
     ) val mediaUri: String? = null,
+    @ColumnInfo(
+        name = "location_coordinate",
+        defaultValue = "NULL"
+    ) val locationCoordinate: LatLng? = null
 ) {
     fun validate(): ValidationResult {
         try {
@@ -54,6 +57,7 @@ data class ReviewModel(
         return RemoteSourceReview(
             artist = artist,
             location_name = location,
+            location_coordinate = locationCoordinate?.let { GeoPoint(it.latitude, it.longitude) },
             review = review,
             reviewer_uid = reviewerUid,
             id = id,

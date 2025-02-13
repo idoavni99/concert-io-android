@@ -18,6 +18,9 @@ interface ReviewsDao {
     @Query("SELECT * FROM reviews WHERE id = :id")
     fun findById(id: String): LiveData<ReviewWithReviewer?>
 
+    @Query("SELECT * FROM reviews WHERE artist LIKE :query OR location LIKE :query")
+    suspend fun searchReviews(query: String): List<ReviewWithReviewer>
+
     @Upsert
     fun upsertAll(vararg review: ReviewModel)
 

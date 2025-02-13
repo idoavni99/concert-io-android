@@ -7,19 +7,20 @@ import android.Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED
 import android.os.Build
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContextCompat
-import androidx.core.content.PermissionChecker.PERMISSION_GRANTED
 import androidx.fragment.app.Fragment
 
 abstract class FileUploadingFragment() : Fragment() {
     abstract fun onFileAccessGranted()
+    open fun onFileAccessDenied() {
+        Toast.makeText(context, "Permission denied", Toast.LENGTH_SHORT).show()
+    }
 
     private val fileAccessLauncher =
         this.registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { results ->
-            if (results.all { it.value }) {
+            if (results.any { it.value }) {
                 onFileAccessGranted()
             } else {
-                Toast.makeText(context, "Permission denied", Toast.LENGTH_SHORT).show()
+                onFileAccessDenied()
             }
         }
 

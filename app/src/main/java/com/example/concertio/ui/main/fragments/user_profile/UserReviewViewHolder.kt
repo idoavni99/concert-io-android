@@ -5,7 +5,6 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.RatingBar
 import android.widget.TextView
-import android.widget.VideoView
 import androidx.media3.ui.PlayerView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.concertio.R
@@ -13,8 +12,12 @@ import com.example.concertio.data.reviews.ReviewModel
 import com.example.concertio.data.reviews.ReviewWithReviewer
 import com.example.concertio.extensions.initMedia
 import com.example.concertio.extensions.showProgress
-import com.example.concertio.extensions.stopProgress
+import com.google.android.gms.maps.model.LatLng
+import com.example.concertio.storage.FileCacheManager
 import com.google.android.material.button.MaterialButton
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import java.net.URL
 
 class UserReviewViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     val reviewLocation: TextView = itemView.findViewById(R.id.review_location)
@@ -30,23 +33,27 @@ class UserReviewViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         fun bind(
             holder: UserReviewViewHolder,
             currentReview: ReviewWithReviewer,
+            onLocationClicked: ((location: LatLng, name: String) -> Unit),
+            scope: CoroutineScope,
             onEditClick: ((review: ReviewModel) -> Unit)?,
             onDeleteClick: ((review: ReviewModel) -> Unit)?
         ) {
             holder.reviewLocation.text = currentReview.review.location
-            holder.reviewArtist.text = currentReview.review.artist
+            holder.reviewArtist.text = currentReview.review.artist ?: "Unknown"
             holder.reviewText.text = currentReview.review.review
-            holder.stars.rating = currentReview.review.stars?.toFloat() ?: 0F
+            holder.stars.rating = currentReview.review.stars ?: 0F
 
-            currentReview.review.mediaUri?.let { uri ->
-                currentReview.review.mediaType?.let { type ->
-                    initMedia(
-                        holder.itemView.context,
-                        holder.image,
-                        holder.video,
-                        Uri.parse(uri),
-                        type
-                    )
+            scope.launch {
+                currentReview.review.mediaUri?.let { uri ->
+                    currentReview.review.mediaType?.let { type ->
+                        initMedia(
+                            holder.itemView.context,
+                            holder.image,
+                            holder.video,
+                            FileCacheManager.getFileLocalUri(URL(uri)),
+                            type
+                        )
+                    }
                 }
             }
 
@@ -57,6 +64,12 @@ class UserReviewViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             holder.deleteButton.setOnClickListener {
                 holder.deleteButton.showProgress()
                 onDeleteClick?.invoke(currentReview.review)
+            }
+
+            currentReview.review.locationCoordinate?.let { coordinate ->
+                holder.reviewLocation.setOnClickListener {
+                    onLocationClicked(coordinate, currentReview.review.location ?: "")
+                }
             }
         }
     }

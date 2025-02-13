@@ -15,17 +15,21 @@ import androidx.core.view.isVisible
 import androidx.credentials.CredentialManager
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.concertio.R
 import com.example.concertio.extensions.FileUploadingFragment
 import com.example.concertio.extensions.loadProfilePicture
 import com.example.concertio.extensions.showProgress
+import com.example.concertio.storage.FileCacheManager
 import com.example.concertio.ui.auth.AuthViewModel
 import com.example.concertio.ui.main.UserProfileViewModel
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.material.button.MaterialButton
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+import kotlinx.coroutines.launch
+import java.net.URL
 
 class SettingsFragment : FileUploadingFragment() {
     private val profilePictureView by lazy { view?.findViewById<ImageView>(R.id.user_profile_picture) }
@@ -44,8 +48,7 @@ class SettingsFragment : FileUploadingFragment() {
                 result.data?.data?.let {
                     profilePictureView?.loadProfilePicture(
                         requireContext(),
-                        it,
-                        R.drawable.empty_profile_picture
+                        it
                     )
                     profilePictureUri = it
                 }
@@ -136,13 +139,14 @@ class SettingsFragment : FileUploadingFragment() {
         userProfileViewModel.observeMyProfile().observe(viewLifecycleOwner) {
             it?.run {
                 nameField?.setText(name)
-                profilePicture?.run {
-                    profilePictureUri = Uri.parse(this)
-                    profilePictureView?.loadProfilePicture(
-                        requireContext(),
-                        profilePictureUri,
-                        R.drawable.empty_profile_picture
-                    )
+                lifecycleScope.launch {
+                    profilePicture?.run {
+                        profilePictureUri = FileCacheManager.getFileLocalUri(URL(this))
+                        profilePictureView?.loadProfilePicture(
+                            requireContext(),
+                            profilePictureUri,
+                        )
+                    }
                 }
                 emailField?.setText(email)
             }

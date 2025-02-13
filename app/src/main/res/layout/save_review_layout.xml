@@ -6,41 +6,36 @@
     android:layout_height="match_parent"
     tools:context=".ui.main.fragments.save_review.EditReviewFragment">
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/location_text_layout"
-        android:layout_width="wrap_content"
+    <com.google.android.material.textfield.MaterialAutoCompleteTextView
+        android:id="@+id/review_location"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
+        android:layout_marginHorizontal="16dp"
         android:layout_marginTop="16dp"
-        android:hint="@string/review_location_hint"
+        android:hint="@string/location"
+        android:inputType="text"
         android:minWidth="128dp"
-        android:minHeight="48dp"
+        android:minHeight="64dp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/review_location"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:inputType="text" />
-    </com.google.android.material.textfield.TextInputLayout>
+        app:layout_constraintTop_toTopOf="parent" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/artist_text_layout"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
+        android:layout_marginHorizontal="16dp"
         android:layout_marginTop="16dp"
         android:hint="@string/artist_name_hint"
         android:minWidth="128dp"
         android:minHeight="48dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/location_text_layout"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/review_location">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/review_artist"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content" />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -60,7 +55,6 @@
         android:background="@android:color/transparent"
         android:text="@string/choose_media"
         android:textColor="?attr/colorPrimaryVariant"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/review_media_layout" />
 
@@ -70,21 +64,21 @@
         android:layout_height="wrap_content"
         android:scaleX="0.5"
         android:scaleY="0.5"
+        app:layout_constraintStart_toEndOf="@id/choose_media"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/choose_media" />
+        app:layout_constraintTop_toBottomOf="@id/review_media_layout" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/save_review_text_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
+        android:layout_marginHorizontal="16dp"
         android:layout_marginTop="16dp"
         android:hint="Review Text"
         android:minHeight="64dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/save_review_stars"
-        >
+        app:layout_constraintTop_toBottomOf="@id/save_review_stars">
+
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/save_review_text"
             android:layout_width="match_parent"

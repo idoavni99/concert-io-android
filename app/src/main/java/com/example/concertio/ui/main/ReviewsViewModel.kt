@@ -1,23 +1,36 @@
 package com.example.concertio.ui.main
 
+import android.location.Location
 import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.switchMap
 import androidx.lifecycle.viewModelScope
+import com.example.concertio.data.PlaceData
 import com.example.concertio.data.reviews.ReviewModel
 import com.example.concertio.data.reviews.ReviewWithReviewer
 import com.example.concertio.data.reviews.ReviewsRepository
+import com.example.concertio.places.PlacesClientHolder
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.tasks.Task
+import com.google.android.libraries.places.api.model.CircularBounds
+import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest
 import com.google.firebase.firestore.Query
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 
 const val REVIEWS_FETCH_LIMIT = 50
 
 class ReviewsViewModel : ViewModel() {
     private val repository = ReviewsRepository.getInstance()
     private var isLoadingReviews = false
+    private var prevSearchJob: Job? = null
     private lateinit var reviewsCursor: Query
     private val page = MutableLiveData(1)
 
@@ -33,6 +46,18 @@ class ReviewsViewModel : ViewModel() {
         return this.page.switchMap {
             repository.getReviewsList(it * REVIEWS_FETCH_LIMIT, getOnlyMyReviews)
         }
+    }
+
+    fun searchReviews(searchQuery: String, onReviewsFound: (List<ReviewWithReviewer>) -> Unit) {
+        prevSearchJob = viewModelScope.launch(Dispatchers.Main) {
+            val results = repository.searchReviews(searchQuery)
+            onReviewsFound(results)
+        }
+    }
+
+    fun cancelRunningSearch() {
+        prevSearchJob?.cancel("Search canceled")
+        prevSearchJob = null
     }
 
     fun invalidateReviews() {
@@ -68,6 +93,7 @@ class ReviewsViewModel : ViewModel() {
 
     fun saveReview(
         review: ReviewModel,
+        placeId: String?,
         mediaUri: Uri?,
         onCompleteUi: () -> Unit = {},
         onErrorUi: (message: String?) -> Unit = {}
@@ -80,9 +106,12 @@ class ReviewsViewModel : ViewModel() {
                             review.id,
                             mediaUri
                         ) else mediaUri
+                    val locationCoordinate =
+                        if (placeId != null) repository.getCoordinateByPlaceId(placeId) else null
                     repository.saveReview(
                         review.copy(
-                            mediaUri = uri.toString()
+                            mediaUri = uri.toString(),
+                            locationCoordinate = locationCoordinate
                         )
                     )
                     onCompleteUi()
