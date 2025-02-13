@@ -9,6 +9,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.concertio.R
+import com.example.concertio.data.reviews.ReviewModel
 import com.example.concertio.data.reviews.ReviewWithReviewer
 import com.example.concertio.extensions.initMedia
 import com.example.concertio.storage.FileCacheManager
@@ -18,6 +19,7 @@ import java.net.URL
 
 class EditReviewFragment : AddReviewFragment() {
     private val args by navArgs<EditReviewFragmentArgs>()
+    private lateinit var oldReview: ReviewModel
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -44,12 +46,13 @@ class EditReviewFragment : AddReviewFragment() {
                 lifecycleScope.launch {
                     mediaType?.let { type ->
                         val uri = FileCacheManager.getFileLocalUri(URL(url))
-                        this@EditReviewFragment.mediaUri = uri
+                        this@EditReviewFragment.mediaUri = Uri.parse(url)
                         this@EditReviewFragment.mediaType = mediaType
                         initMedia(requireContext(), reviewImage, reviewVideo, uri, type)
                     }
                 }
             }
+            oldReview = this
         } ?: {
             viewModel.invalidateReviewById(args.reviewId)
         }
@@ -60,5 +63,12 @@ class EditReviewFragment : AddReviewFragment() {
             .navigate(EditReviewFragmentDirections.actionEditReviewFragmentToUserProfileFragment())
     }
 
-    override fun getReviewFromInputs() = super.getReviewFromInputs().copy(id = args.reviewId)
+    override fun getReviewFromInputs() = oldReview.copy(
+        artist = artistTextView?.text.toString(),
+        location = locationTextView?.text.toString(),
+        review = reviewText?.text.toString(),
+        stars = reviewStars?.rating,
+        mediaUri = mediaUri?.toString() ?: oldReview.mediaUri,
+        mediaType = mediaType
+    )
 }

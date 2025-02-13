@@ -20,7 +20,6 @@ object FileCacheManager {
 
     suspend fun clearCacheAsync() = withContext(Dispatchers.IO) {
         cacheDir.deleteRecursively()
-        cacheDir.mkdirs()
     }
 
     suspend fun getFileLocalUri(remoteUrl: URL) =
@@ -41,16 +40,12 @@ object FileCacheManager {
     }
 
     private fun cacheFile(remoteUrl: URL, key: String): Uri {
-        try {
-            val fileHandle = File(cacheDir, key)
-            remoteUrl.openStream().use {
-                FileOutputStream(fileHandle).use { outputStream ->
-                    it.copyTo(outputStream)
-                }
+        val fileHandle = File(cacheDir, key)
+        remoteUrl.openStream().use {
+            FileOutputStream(fileHandle).use { outputStream ->
+                it.copyTo(outputStream)
             }
-            return fileHandle.toUri()
-        } catch (e: Exception) {
-            return Uri.parse(remoteUrl.toString())
         }
+        return fileHandle.toUri()
     }
 }

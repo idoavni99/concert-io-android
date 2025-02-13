@@ -106,9 +106,9 @@ class ReviewsViewModel : ViewModel() {
                         if (mediaUri?.scheme == "content") repository.uploadReviewMedia(
                             review.id,
                             mediaUri
-                        ) else mediaUri
+                        ) else review.mediaUri
                     val locationCoordinate =
-                        if (placeId != null) repository.getCoordinateByPlaceId(placeId) else null
+                        if (placeId != null) repository.getCoordinateByPlaceId(placeId) else review.locationCoordinate
                     repository.saveReview(
                         review.copy(
                             mediaUri = uri.toString(),

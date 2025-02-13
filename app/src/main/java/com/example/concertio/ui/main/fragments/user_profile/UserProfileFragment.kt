@@ -27,7 +27,6 @@ import com.example.concertio.ui.main.ReviewsViewModel
 import com.example.concertio.ui.main.listadapter.ReviewType
 import com.example.concertio.ui.main.listadapter.ReviewsAdapter
 import com.example.concertio.ui.main.UserProfileViewModel
-import com.google.android.material.progressindicator.CircularProgressIndicator
 import kotlinx.coroutines.launch
 import java.net.URL
 
