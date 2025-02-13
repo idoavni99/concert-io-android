@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.credentials.CredentialManager
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -46,8 +47,11 @@ class LoginFragment : Fragment() {
                 .setAutoSelectEnabled(true)
                 .setNonce(getString(R.string.app_name))
                 .build()
-            authViewModel.signInWithIdToken(idOption, credentialManager, requireContext()) {
-                toApp()
+
+            context?.let { context ->
+                authViewModel.signInWithIdToken(idOption, credentialManager, context, ::toApp) {
+                    Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }

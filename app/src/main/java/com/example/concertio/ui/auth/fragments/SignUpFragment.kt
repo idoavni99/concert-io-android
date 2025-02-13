@@ -124,6 +124,9 @@ class SignUpFragment : FileUploadingFragment() {
                     onFinishUi = {
                         toApp()
                     })
+                {
+                    Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+                }
             } catch (e: Exception) {
                 Toast.makeText(
                     requireContext(),

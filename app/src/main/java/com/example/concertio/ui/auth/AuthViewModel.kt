@@ -78,25 +78,31 @@ class AuthViewModel : ViewModel() {
         name: String,
         profilePictureUri: Uri? = null,
         onFinishUi: () -> Unit,
+        onErrorUi: (message: String) -> Unit
+
     ) {
         viewModelScope.launch(Dispatchers.IO) {
-            FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, password)
-                .await().apply {
-                    user?.apply {
-                        val uploadedPictureUri =
-                            if (profilePictureUri != null) usersRepository.uploadUserProfilePictureToFirebase(
-                                profilePictureUri,
-                                this.uid
-                            ) else null
-                        user?.updateProfile(
-                            UserProfileChangeRequest.Builder().apply {
-                                displayName = name
-                                photoUri = uploadedPictureUri
-                            }.build()
-                        )
+            try {
+                FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, password)
+                    .await().apply {
+                        user?.apply {
+                            val uploadedPictureUri =
+                                if (profilePictureUri != null) usersRepository.uploadUserProfilePictureToFirebase(
+                                    profilePictureUri,
+                                    this.uid
+                                ) else null
+                            user?.updateProfile(
+                                UserProfileChangeRequest.Builder().apply {
+                                    displayName = name
+                                    photoUri = uploadedPictureUri
+                                }.build()
+                            )
+                        }
                     }
-                }
-            signInWithEmailPassword(email, password, onFinishUi, onErrorUi = {})
+                signInWithEmailPassword(email, password, onFinishUi, onErrorUi)
+            } catch (e: Exception) {
+                onErrorUi("Sign Up Failed")
+            }
         }
     }
 
@@ -104,27 +110,33 @@ class AuthViewModel : ViewModel() {
         idOption: GetGoogleIdOption,
         credentialManager: CredentialManager,
         context: Context,
-        onFinishUi: () -> Unit
+        onFinishUi: () -> Unit,
+        onErrorUi: (message: String) -> Unit
+
     ) {
         viewModelScope.launch(Dispatchers.IO) {
-            val credential = credentialManager.getCredential(
-                request = GetCredentialRequest.Builder().addCredentialOption(idOption)
-                    .build(),
-                context = context
-            ).credential
-            when (credential) {
-                is CustomCredential -> {
-                    val idToken = GoogleIdTokenCredential.createFrom(credential.data)
-                    FirebaseAuth.getInstance().signInWithCredential(
-                        GoogleAuthProvider.getCredential(
-                            idToken.idToken,
-                            null
-                        )
-                    ).await()
-                    register {
-                        onFinishUi()
+            try {
+                val credential = credentialManager.getCredential(
+                    request = GetCredentialRequest.Builder().addCredentialOption(idOption)
+                        .build(),
+                    context = context
+                ).credential
+                when (credential) {
+                    is CustomCredential -> {
+                        val idToken = GoogleIdTokenCredential.createFrom(credential.data)
+                        FirebaseAuth.getInstance().signInWithCredential(
+                            GoogleAuthProvider.getCredential(
+                                idToken.idToken,
+                                null
+                            )
+                        ).await()
+                        register {
+                            onFinishUi()
+                        }
                     }
                 }
+            } catch (e: Exception) {
+onErrorUi("Sign In with Google failed")
             }
         }
     }

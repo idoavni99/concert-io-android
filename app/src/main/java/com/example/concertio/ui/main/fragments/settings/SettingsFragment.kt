@@ -116,7 +116,9 @@ class SettingsFragment : FileUploadingFragment() {
                         credentialManager = this,
                         requireContext(),
                         ::showSensitiveFields
-                    )
+                    ) {
+                        Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+                    }
                 }
             } else {
                 activity?.let {
