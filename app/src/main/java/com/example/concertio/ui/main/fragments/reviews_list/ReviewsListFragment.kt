@@ -10,15 +10,18 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.OnScrollListener
 import com.example.concertio.R
+import com.example.concertio.ui.main.ReviewsScrollListener
 import com.example.concertio.ui.main.listadapter.ReviewType
 import com.example.concertio.ui.main.listadapter.ReviewsAdapter
 import com.example.concertio.ui.main.ReviewsViewModel
+import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.google.android.material.search.SearchBar
 import com.google.android.material.search.SearchView
 
@@ -28,7 +31,7 @@ class ReviewsListFragment : Fragment() {
     private lateinit var searchResults: RecyclerView;
     private lateinit var searchBar: SearchBar
     private lateinit var searchView: SearchView
-    private val viewModel: ReviewsViewModel by activityViewModels()
+    private val viewModel: ReviewsViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -107,15 +110,8 @@ class ReviewsListFragment : Fragment() {
                 )
             )
             addOnScrollListener(
-                object : OnScrollListener() {
-                    override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-                        super.onScrollStateChanged(recyclerView, newState)
-
-                        if (!this@run.canScrollVertically(1)) {
-                            viewModel.onListEnd()
-                        }
-                    }
-                }
+                ReviewsScrollListener(
+                    { viewModel.invalidateReviews() })
             )
         }
     }

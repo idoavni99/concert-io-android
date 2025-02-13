@@ -3,26 +3,20 @@ package com.example.concertio.ui.main
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.concertio.data.reviews.ReviewsRepository
 import com.example.concertio.data.users.UsersRepository
-import com.example.concertio.storage.FileCacheManager
+import com.example.concertio.ui.auth.AuthService
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class UserProfileViewModel : ViewModel() {
     private val usersRepository = UsersRepository.getInstance()
-    private val reviewsRepository = ReviewsRepository.getInstance()
 
     fun observeMyProfile() =
         usersRepository.getMyUserObservable()
 
-    fun signOut(onFinishUi: () -> Unit) = viewModelScope.launch {
-        FileCacheManager.clearCacheAsync()
-        reviewsRepository.deleteAll()
-        usersRepository.deleteAllUsers()
-        FirebaseAuth.getInstance().signOut()
-        onFinishUi()
+    fun signOut() = viewModelScope.launch(Dispatchers.Main) {
+        AuthService.getInstance().signOut()
     }
 
     fun updateProfile(

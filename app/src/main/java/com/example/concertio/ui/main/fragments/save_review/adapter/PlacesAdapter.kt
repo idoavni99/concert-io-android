@@ -36,7 +36,6 @@ class PlacesAdapter(
         return results.size
     }
 
-    @SuppressLint("MissingPermission")
     private suspend fun queryPredictions(text: String) = withContext(Dispatchers.IO) {
         val lastLocation = this@PlacesAdapter.getLastLocation()
 
@@ -64,15 +63,20 @@ class PlacesAdapter(
         }
     }
 
-    fun getLastLocation(): Location? {
-        try {
-            return if (context.hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION)) LocationServices.getFusedLocationProviderClient(
-                context
-            ).lastLocation.await() else null
+    @SuppressLint("MissingPermission")
+    suspend fun getLastLocation(): Location? {
+        return try {
+            if (context.hasPermission(
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+            )
+                LocationServices.getFusedLocationProviderClient(
+                    context
+                ).lastLocation.await() else null
         } catch (
-            e:Exception
+            e: Exception
         ) {
-            return null
+            null
         }
     }
 

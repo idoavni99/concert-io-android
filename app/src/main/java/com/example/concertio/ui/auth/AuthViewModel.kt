@@ -21,23 +21,8 @@ import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 
 class AuthViewModel : ViewModel() {
+    private val authService = AuthService.getInstance()
     private val usersRepository = UsersRepository.getInstance()
-    private fun register(onFinishUi: () -> Unit) {
-        viewModelScope.launch(Dispatchers.Main) {
-            FirebaseAuth.getInstance().currentUser?.let {
-                usersRepository.upsertUser(
-                    UserModel(
-                        uid = it.uid,
-                        name = it.displayName ?: "",
-                        email = it.email,
-                        profilePicture = it.photoUrl?.toString()
-                            ?: usersRepository.getUserByUid(it.uid)?.profilePicture
-                    )
-                )
-                onFinishUi()
-            }
-        }
-    }
 
     fun isUserLoggedIn(): Boolean {
         return FirebaseAuth.getInstance().currentUser != null
@@ -58,17 +43,14 @@ class AuthViewModel : ViewModel() {
         onFinishUi: () -> Unit,
         onErrorUi: (message: String) -> Unit
     ) {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password)
-                    .await().user?.let {
-                        register(onFinishUi)
-                    }
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    onErrorUi("Sign in failed")
-                }
-            }
+        viewModelScope.launch(Dispatchers.Main) {
+            authService.signInWithEmailAndPassword(email, password)?.let {
+                authService.saveUserToCache(
+                    it, it.photoUrl?.toString()
+                        ?: usersRepository.getUserByUid(it.uid)?.profilePicture
+                )
+                onFinishUi()
+            } ?: run { onErrorUi("Sign in failed") }
         }
     }
 
@@ -81,28 +63,10 @@ class AuthViewModel : ViewModel() {
         onErrorUi: (message: String) -> Unit
 
     ) {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, password)
-                    .await().apply {
-                        user?.apply {
-                            val uploadedPictureUri =
-                                if (profilePictureUri != null) usersRepository.uploadUserProfilePictureToFirebase(
-                                    profilePictureUri,
-                                    this.uid
-                                ) else null
-                            user?.updateProfile(
-                                UserProfileChangeRequest.Builder().apply {
-                                    displayName = name
-                                    photoUri = uploadedPictureUri
-                                }.build()
-                            )
-                        }
-                    }
-                signInWithEmailPassword(email, password, onFinishUi, onErrorUi)
-            } catch (e: Exception) {
-                onErrorUi("Sign Up Failed")
-            }
+        viewModelScope.launch(Dispatchers.Main) {
+            authService.signUp(email, password, name, profilePictureUri)?.let {
+                onFinishUi()
+            } ?: run { onErrorUi("Sign up failed") }
         }
     }
 
@@ -114,30 +78,10 @@ class AuthViewModel : ViewModel() {
         onErrorUi: (message: String) -> Unit
 
     ) {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val credential = credentialManager.getCredential(
-                    request = GetCredentialRequest.Builder().addCredentialOption(idOption)
-                        .build(),
-                    context = context
-                ).credential
-                when (credential) {
-                    is CustomCredential -> {
-                        val idToken = GoogleIdTokenCredential.createFrom(credential.data)
-                        FirebaseAuth.getInstance().signInWithCredential(
-                            GoogleAuthProvider.getCredential(
-                                idToken.idToken,
-                                null
-                            )
-                        ).await()
-                        register {
-                            onFinishUi()
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-onErrorUi("Sign In with Google failed")
-            }
+        viewModelScope.launch(Dispatchers.Main) {
+            authService.signInWithIdToken(idOption, credentialManager, context)?.let {
+                onFinishUi()
+            } ?: run { onErrorUi("Sign in with google failed") }
         }
     }
 }

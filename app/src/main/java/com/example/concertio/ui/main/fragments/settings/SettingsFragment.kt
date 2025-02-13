@@ -104,6 +104,7 @@ class SettingsFragment : FileUploadingFragment() {
                 it.providerId == GoogleAuthProvider.PROVIDER_ID
             } ?: false
             if (hasSignedInWithGoogle) {
+                emailField?.isVisible = false
                 CredentialManager.create(requireContext()).apply {
                     val idOption = GetGoogleIdOption.Builder()
                         .setFilterByAuthorizedAccounts(true)

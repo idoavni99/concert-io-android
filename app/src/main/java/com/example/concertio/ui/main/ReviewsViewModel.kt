@@ -17,13 +17,12 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.tasks.Task
 import com.google.android.libraries.places.api.model.CircularBounds
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.Query
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
-import kotlinx.coroutines.withContext
 
 const val REVIEWS_FETCH_LIMIT = 50
 
@@ -61,7 +60,7 @@ class ReviewsViewModel : ViewModel() {
     }
 
     fun invalidateReviews() {
-        if (!isLoadingReviews) {
+        if (!isLoadingReviews && FirebaseAuth.getInstance().uid != null) {
             viewModelScope.launch {
                 isLoadingReviews = true
                 if (::reviewsCursor.isInitialized) {
@@ -75,10 +74,6 @@ class ReviewsViewModel : ViewModel() {
                 isLoadingReviews = false
             }
         }
-    }
-
-    fun onListEnd() {
-        invalidateReviews()
     }
 
     fun invalidateReviewById(id: String) {

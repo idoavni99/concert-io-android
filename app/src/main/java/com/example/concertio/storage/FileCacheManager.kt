@@ -41,12 +41,16 @@ object FileCacheManager {
     }
 
     private fun cacheFile(remoteUrl: URL, key: String): Uri {
-        val fileHandle = File(cacheDir, key)
-        remoteUrl.openStream().use {
-            FileOutputStream(fileHandle).use { outputStream ->
-                it.copyTo(outputStream)
+        try {
+            val fileHandle = File(cacheDir, key)
+            remoteUrl.openStream().use {
+                FileOutputStream(fileHandle).use { outputStream ->
+                    it.copyTo(outputStream)
+                }
             }
+            return fileHandle.toUri()
+        } catch (e: Exception) {
+            return Uri.parse(remoteUrl.toString())
         }
-        return fileHandle.toUri()
     }
 }

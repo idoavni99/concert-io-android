@@ -1,6 +1,7 @@
 package com.example.concertio.data.reviews
 
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.LiveData
 import com.example.concertio.data.users.UsersRepository
 import com.example.concertio.places.PlacesClientHolder
@@ -35,10 +36,6 @@ class ReviewsRepository {
         reviewsDao.deleteById(id)
     }
 
-    suspend fun deleteAll() = withContext(Dispatchers.IO) {
-        reviewsDao.deleteAll()
-    }
-
     fun getReviewById(id: String): LiveData<ReviewWithReviewer?> {
         return reviewsDao.findById(id)
     }
@@ -56,12 +53,17 @@ class ReviewsRepository {
 
     suspend fun loadReviewFromRemoteSource(id: String) =
         withContext(Dispatchers.IO) {
-            val review =
-                firestoreHandle.document(id).get().await().toObject(RemoteSourceReview::class.java)
-                    ?.toReviewModel()
-            if (review != null) {
-                usersRepository.cacheUserIfNotExisting(review.reviewerUid)
-                reviewsDao.upsertAll(review)
+            try {
+                val review =
+                    firestoreHandle.document(id).get().await()
+                        .toObject(RemoteSourceReview::class.java)
+                        ?.toReviewModel()
+                if (review != null) {
+                    usersRepository.cacheUserIfNotExisting(review.reviewerUid)
+                    reviewsDao.upsertAll(review)
+                }
+            } catch (e: Exception) {
+                Log.e("ReviewsRepository", e.toString())
             }
             return@withContext reviewsDao.findById(id)
         }
@@ -80,19 +82,29 @@ class ReviewsRepository {
         }
     }
 
-    private suspend fun saveReviewsFromRemoteSource(result: QuerySnapshot) =
+    private suspend fun saveReviewsFromRemoteSource(result: QuerySnapshot): Unit =
         withContext(Dispatchers.IO) {
-            val reviews = result.toObjects(RemoteSourceReview::class.java)
-                .map { it.toReviewModel() }
-            if (reviews.isNotEmpty()) {
-                usersRepository.cacheUsersIfNotExisting(reviews.map { it.reviewerUid })
-                reviewsDao.upsertAll(*reviews.toTypedArray())
+            try {
+                val reviews = result.toObjects(RemoteSourceReview::class.java)
+                    .map { it.toReviewModel() }
+                if (reviews.isNotEmpty()) {
+                    usersRepository.cacheUsersIfNotExisting(reviews.map { it.reviewerUid })
+                    reviewsDao.upsertAll(*reviews.toTypedArray())
+                }
+            } catch (e: Exception) {
+                Log.e("ReviewsRepository", e.toString(), e)
             }
         }
 
-    suspend fun uploadReviewMedia(reviewId: String, uri: Uri): Uri = withContext(Dispatchers.IO) {
-        CloudStorageHolder.reviewFiles.child(reviewId).putFile(uri).await()
-        CloudStorageHolder.reviewFiles.child(reviewId).downloadUrl.await()
+    suspend fun uploadReviewMedia(reviewId: String, uri: Uri): Uri? = withContext(Dispatchers.IO) {
+        try {
+            CloudStorageHolder.reviewFiles.child(reviewId).putFile(uri).await()
+            CloudStorageHolder.reviewFiles.child(reviewId).downloadUrl.await()
+        } catch (e: Exception) {
+            Log.e("ReviewsRepository", e.toString(), e)
+            null
+        }
+
     }
 
     suspend fun getCoordinateByPlaceId(placeId: String): LatLng? = withContext(Dispatchers.IO) {

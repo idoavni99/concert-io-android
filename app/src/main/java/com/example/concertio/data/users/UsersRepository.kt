@@ -1,6 +1,7 @@
 package com.example.concertio.data.users
 
 import android.net.Uri
+import android.util.Log
 import com.example.concertio.room.DatabaseHolder
 import com.example.concertio.storage.CloudStorageHolder
 import com.google.firebase.auth.FirebaseAuth
@@ -16,7 +17,7 @@ class UsersRepository {
     private val usersDao = DatabaseHolder.getDatabase().usersDao()
     private val firestoreHandle = Firebase.firestore.collection("users")
 
-    fun getMyUid() = FirebaseAuth.getInstance().currentUser!!.uid
+    fun getMyUid() = FirebaseAuth.getInstance().currentUser?.uid!!
 
     fun getMyUserObservable() = usersDao.getMyUserObservable(getMyUid())
 
@@ -45,16 +46,16 @@ class UsersRepository {
     }
 
     suspend fun updateUserAuth(email: String?, password: String?) = withContext(Dispatchers.IO) {
-        email?.let {
-            FirebaseAuth.getInstance().currentUser?.verifyBeforeUpdateEmail(email)?.await()
+        try {
+            email?.let {
+                FirebaseAuth.getInstance().currentUser?.verifyBeforeUpdateEmail(email)?.await()
+            }
+            password?.let {
+                FirebaseAuth.getInstance().currentUser?.updatePassword(password)?.await()
+            }
+        } catch (error: Exception) {
+            Log.e("UsersRepository", error.toString())
         }
-        password?.let {
-            FirebaseAuth.getInstance().currentUser?.updatePassword(password)?.await()
-        }
-    }
-
-    suspend fun deleteAllUsers() = withContext(Dispatchers.IO) {
-        usersDao.deleteAll()
     }
 
     suspend fun cacheUserIfNotExisting(uid: String) = withContext(Dispatchers.IO) {
@@ -79,7 +80,7 @@ class UsersRepository {
         firestoreHandle.whereEqualTo("email", email).get().await().size() > 0
     }
 
-    suspend fun getUserFromRemoteSource(uid: String): UserModel? =
+    private suspend fun getUserFromRemoteSource(uid: String): UserModel? =
         withContext(Dispatchers.IO) {
             val user =
                 firestoreHandle.document(uid).get().await().toObject(RemoteSourceUser::class.java)

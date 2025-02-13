@@ -44,5 +44,5 @@ fun Context.hasPermission(permission: String): Boolean {
     return ActivityCompat.checkSelfPermission(
         this,
         permission
-    ) != PackageManager.PERMISSION_GRANTED
+    ) == PackageManager.PERMISSION_GRANTED
 }
