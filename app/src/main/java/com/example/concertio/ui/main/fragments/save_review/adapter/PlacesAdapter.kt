@@ -3,6 +3,7 @@ package com.example.concertio.ui.main.fragments.save_review.adapter
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
+import android.location.Location
 import android.widget.ArrayAdapter
 import android.widget.Filter
 import com.example.concertio.data.PlaceData
@@ -37,10 +38,8 @@ class PlacesAdapter(
 
     @SuppressLint("MissingPermission")
     private suspend fun queryPredictions(text: String) = withContext(Dispatchers.IO) {
-        val lastLocation =
-            if (context.hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION)) LocationServices.getFusedLocationProviderClient(
-                context
-            ).lastLocation.await() else null
+        val lastLocation = this@PlacesAdapter.getLastLocation()
+
         val result = placesClient.findAutocompletePredictions(
             FindAutocompletePredictionsRequest.builder().apply {
                 query = text
@@ -62,6 +61,18 @@ class PlacesAdapter(
         results.addAll(result)
         scope.launch(Dispatchers.Main) {
             notifyDataSetChanged()
+        }
+    }
+
+    fun getLastLocation(): Location? {
+        try {
+            return if (context.hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION)) LocationServices.getFusedLocationProviderClient(
+                context
+            ).lastLocation.await() else null
+        } catch (
+            e:Exception
+        ) {
+            return null
         }
     }
 
